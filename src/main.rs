@@ -1,5 +1,6 @@
 use leptos::ev::SubmitEvent;
 use leptos::prelude::*;
+//command: cargo run --bin leptos_test
 
 #[component]
 fn App() -> impl IntoView {
