@@ -1,0 +1,120 @@
+enum CircuitType {
+    Integrator,
+    Differentiator,
+}
+
+trait Circuit {
+    fn response(&mut self, ue: f64, dt: f64) -> f64;
+}
+
+struct Integrator {
+    r: f64,
+    c: f64,
+    last_ua: f64,
+}
+
+impl Circuit for Integrator {
+    fn response(&mut self, ue: f64, dt: f64) -> f64 {
+        // U_out(t) = -1/(R*C) * ∫ U_in(t) dt
+        // ua[n] = ua[n−1] − 1/(R*C) * Δt * ue[n]
+        let ua = self.last_ua - 1.0 / (self.r * self.c) * dt * ue;
+        self.last_ua = ua;
+        ua
+    }
+}
+
+struct Differentiator {
+    r: f64,
+    c: f64,
+    last_ue: f64,
+}
+
+impl Circuit for Differentiator {
+    fn response(&mut self, ue: f64, dt: f64) -> f64 {
+        // U_out(t) = -R*C * dU_in(t)/dt
+        // ua[n] = -R*C * (ue[n] - ue[n−1]) / Δt
+        let ua = -self.r * self.c * (ue - self.last_ue) / dt;
+        self.last_ue = ue;
+        ua
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::signals::Signal;
+    use crate::signals::SignalParams;
+    use crate::signals::Sinus;
+    use plotters::prelude::*;
+    use plotters::style::full_palette::GREY;
+
+    #[test]
+    fn test_integrator_with_sinus_plot() {
+        let frequency = 10.0; // Frequenz des Sinus-Signals
+        let amplitude = 1.0; // Amplitude des Sinus-Signals
+        let params = SignalParams {
+            amplitude,
+            frequency,
+            phase: 0.0,
+        };
+        let mut integrator = Differentiator {
+            r: 10000.0,
+            c: 1e-6,
+            ue: 0.0,
+        };
+
+        let step = 0.00001; // Zeit-Schrittweite
+        let duration = 0.5; // Gesamtdauer der Simulation
+        let num_steps = (duration / step) as usize;
+
+        let mut input_values = vec![];
+        let mut output_values = vec![];
+
+        for i in 0..num_steps {
+            let t = i as f64 * step;
+            let input = Sinus::value_at(&params, t);
+            let output = integrator.response(input, step);
+            input_values.push((t, input));
+            output_values.push((t, output));
+        }
+
+        // Dynamische Skalierung der Achsen basierend auf den Signalwerten
+        let x_max = duration;
+        let y_min = -amplitude * 2.0; // Dynamische Skalierung der y-Achse
+        let y_max = amplitude * 2.0;
+
+        // Plot der Ergebnisse
+        let root = BitMapBackend::new("integrator_sinus_plot.png", (800, 600)).into_drawing_area();
+        root.fill(&GREY).unwrap();
+
+        let mut chart = ChartBuilder::on(&root)
+            .caption("Integrator Input (Sinus) and Output", ("sans-serif", 20))
+            .margin(10)
+            .x_label_area_size(30)
+            .y_label_area_size(30)
+            .build_cartesian_2d(0.0..x_max, y_min..y_max)
+            .unwrap();
+
+        chart.configure_mesh().draw().unwrap();
+
+        chart
+            .draw_series(LineSeries::new(input_values, &RED))
+            .unwrap()
+            .label("Input Signal (Sinus)")
+            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &RED));
+
+        chart
+            .draw_series(LineSeries::new(output_values, &BLUE))
+            .unwrap()
+            .label("Output Signal (Integrator)")
+            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &BLUE));
+
+        chart
+            .configure_series_labels()
+            .background_style(&GREY)
+            .position(SeriesLabelPosition::UpperRight)
+            .border_style(&BLACK)
+            .draw()
+            .unwrap();
+    }
+}

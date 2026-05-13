@@ -1,5 +1,6 @@
-mod backend;
+mod circuits;
 mod errors;
+mod signals;
 
 use leptos::ev::SubmitEvent;
 use leptos::prelude::*;

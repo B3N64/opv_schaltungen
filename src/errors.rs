@@ -1,19 +1,16 @@
-#[derive(Debug)]
-pub struct Error {
-    err: Box<ErrorCode>,
-}
+use std::fmt;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug)]
-enum ErrorCode {
-    InvalidSignalType(String),
+pub(crate) enum Error {
+    NegativeFrequency,
 }
 
-impl Error {
-    pub(crate) fn syntax(msg: String) -> Self {
-        Self {
-            err: Box::new(ErrorCode::InvalidSignalType(msg)),
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &*self {
+            Error::NegativeFrequency => write!(f, "Frequency cannot be negative"),
         }
     }
 }
