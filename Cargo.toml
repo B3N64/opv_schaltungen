@@ -6,7 +6,3 @@ edition = "2024"
 [dependencies]
 leptos = { version = "0.8.19", features = ["csr"] }
 plotters = "0.3.7"
-
-[[bin]]
-name = "plotters_test"
-path = "bin/plotters_test.rs"

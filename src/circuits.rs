@@ -60,7 +60,7 @@ mod tests {
         let mut integrator = Differentiator {
             r: 10000.0,
             c: 1e-6,
-            ue: 0.0,
+            last_ue: 0.0,
         };
 
         let step = 0.00001; // Zeit-Schrittweite
