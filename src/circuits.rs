@@ -1,11 +1,12 @@
 use crate::signals::Signal;
+use std::ops::Add;
 
 enum CircuitType {
     Integrator,
     Differentiator,
 }
 
-trait Circuit {
+pub trait Circuit {
     fn response(&mut self, ue: f64, dt: f64) -> f64;
     fn generate(&mut self, signal: &dyn Signal, duration: f64, step: f64) -> Vec<(f64, f64)> {
         let mut results = vec![];
@@ -44,7 +45,7 @@ impl Circuit for Integrator {
     }
 }
 
-struct Differentiator {
+pub struct Differentiator {
     r: f64,
     c: f64,
     last_ue: f64,
@@ -63,6 +64,31 @@ impl Circuit for Differentiator {
         let ua = -self.r * self.c * (ue - self.last_ue) / dt;
         self.last_ue = ue;
         ua
+    }
+}
+
+pub struct CombinedCircuit<'a> {
+    circuit1: &'a mut dyn Circuit,
+    circuit2: &'a mut dyn Circuit,
+}
+
+impl<'a> CombinedCircuit<'a> {
+    pub fn new(circuit1: &'a mut dyn Circuit, circuit2: &'a mut dyn Circuit) -> Self {
+        Self { circuit1, circuit2 }
+    }
+}
+
+impl<'a> Circuit for CombinedCircuit<'a> {
+    fn response(&mut self, ue: f64, dt: f64) -> f64 {
+        self.circuit2.response(ue, dt) + self.circuit2.response(ue, dt)
+    }
+}
+
+impl<'a> Add for &'a mut dyn Circuit {
+    type Output = CombinedCircuit<'a>;
+
+    fn add(self, other: &'a mut dyn Circuit) -> CombinedCircuit<'a> {
+        CombinedCircuit::new(self, other)
     }
 }
 
