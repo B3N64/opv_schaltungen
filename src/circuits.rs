@@ -1,3 +1,5 @@
+use crate::signals::Signal;
+
 enum CircuitType {
     Integrator,
     Differentiator,
@@ -5,12 +7,31 @@ enum CircuitType {
 
 trait Circuit {
     fn response(&mut self, ue: f64, dt: f64) -> f64;
+    fn generate(&mut self, signal: &dyn Signal, duration: f64, step: f64) -> Vec<(f64, f64)> {
+        let mut results = vec![];
+        let num_steps = (duration / step) as usize;
+
+        for i in 0..num_steps {
+            let t = i as f64 * step;
+            let ue = signal.value_at(t);
+            let ua = self.response(ue, step);
+            results.push((t, ua));
+        }
+
+        results
+    }
 }
 
 struct Integrator {
     r: f64,
     c: f64,
     last_ua: f64,
+}
+
+impl Integrator {
+    fn new(r: f64, c: f64) -> Self {
+        Self { r, c, last_ua: 0.0 }
+    }
 }
 
 impl Circuit for Integrator {
@@ -29,6 +50,12 @@ struct Differentiator {
     last_ue: f64,
 }
 
+impl Differentiator {
+    fn new(r: f64, c: f64) -> Self {
+        Self { r, c, last_ue: 0.0 }
+    }
+}
+
 impl Circuit for Differentiator {
     fn response(&mut self, ue: f64, dt: f64) -> f64 {
         // U_out(t) = -R*C * dU_in(t)/dt
@@ -42,46 +69,32 @@ impl Circuit for Differentiator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::signals::Signal;
-    use crate::signals::SignalParams;
-    use crate::signals::Sinus;
+    use crate::signals::*;
     use plotters::prelude::*;
     use plotters::style::full_palette::GREY;
 
     #[test]
     fn test_integrator_with_sinus_plot() {
-        let frequency = 10.0; // Frequenz des Sinus-Signals
+        let frequency_1 = 10.0; // Frequenz des Sinus-Signals
+        let frequency_2 = 40.0; // Frequenz des Sinus-Signals
         let amplitude = 1.0; // Amplitude des Sinus-Signals
-        let params = SignalParams {
-            amplitude,
-            frequency,
-            phase: 0.0,
-        };
-        let mut integrator = Differentiator {
-            r: 10000.0,
-            c: 1e-6,
-            last_ue: 0.0,
-        };
+        let r = 1000.0; // Widerstand in Ohm
+        let c = 0.000001; // Kapazität in Farad
+        let cosinus = Sinus::new(amplitude, frequency_1, 0.0);
+        let sinus = Sinus::new(amplitude, frequency_2, 0.0);
+        let combined_signal = CombinedSignal::new(&cosinus, &sinus);
+        let mut integrator = Differentiator::new(r, c);
 
         let step = 0.00001; // Zeit-Schrittweite
         let duration = 0.5; // Gesamtdauer der Simulation
-        let num_steps = (duration / step) as usize;
 
-        let mut input_values = vec![];
-        let mut output_values = vec![];
-
-        for i in 0..num_steps {
-            let t = i as f64 * step;
-            let input = Sinus::value_at(&params, t);
-            let output = integrator.response(input, step);
-            input_values.push((t, input));
-            output_values.push((t, output));
-        }
+        let input_values = combined_signal.generate(duration, step);
+        let output_values = integrator.generate(&combined_signal, duration, step);
 
         // Dynamische Skalierung der Achsen basierend auf den Signalwerten
         let x_max = duration;
-        let y_min = -amplitude * 2.0; // Dynamische Skalierung der y-Achse
-        let y_max = amplitude * 2.0;
+        let y_min = -amplitude * 4.0; // Dynamische Skalierung der y-Achse
+        let y_max = amplitude * 4.0;
 
         // Plot der Ergebnisse
         let root = BitMapBackend::new("integrator_sinus_plot.png", (800, 600)).into_drawing_area();
