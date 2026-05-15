@@ -26,20 +26,10 @@ pub struct Constant {
     value: f64,
 }
 
-pub struct Sinus {
-    param: SignalParams,
-}
-
-pub struct Cosinus {
-    param: SignalParams,
-}
-
-pub struct Rectangular {
-    param: SignalParams,
-}
-
-pub struct Triangular {
-    param: SignalParams,
+impl Constant {
+    pub fn new(value: f64) -> Self {
+        Self { value }
+    }
 }
 
 impl Signal for Constant {
@@ -48,9 +38,41 @@ impl Signal for Constant {
     }
 }
 
+pub struct Sinus {
+    param: SignalParams,
+}
+
 impl Signal for Sinus {
     fn value_at(&self, t: f64) -> f64 {
         self.param.amplitude * (2.0 * PI * self.param.frequency * t + self.param.phase).sin()
+    }
+}
+
+impl Sinus {
+    pub fn new(amplitude: f64, frequency: f64, phase: f64) -> Self {
+        Self {
+            param: SignalParams {
+                amplitude,
+                frequency,
+                phase,
+            },
+        }
+    }
+}
+
+pub struct Cosinus {
+    param: SignalParams,
+}
+
+impl Cosinus {
+    pub fn new(amplitude: f64, frequency: f64, phase: f64) -> Self {
+        Self {
+            param: SignalParams {
+                amplitude,
+                frequency,
+                phase,
+            },
+        }
     }
 }
 
@@ -60,12 +82,44 @@ impl Signal for Cosinus {
     }
 }
 
+pub struct Rectangular {
+    param: SignalParams,
+}
+
+impl Rectangular {
+    pub fn new(amplitude: f64, frequency: f64, phase: f64) -> Self {
+        Self {
+            param: SignalParams {
+                amplitude,
+                frequency,
+                phase,
+            },
+        }
+    }
+}
+
 impl Signal for Rectangular {
     fn value_at(&self, t: f64) -> f64 {
         if (2.0 * PI * self.param.frequency * t + self.param.phase).sin() >= 0.0 {
             self.param.amplitude
         } else {
             -self.param.amplitude
+        }
+    }
+}
+
+pub struct Triangular {
+    param: SignalParams,
+}
+
+impl Triangular {
+    pub fn new(amplitude: f64, frequency: f64, phase: f64) -> Self {
+        Self {
+            param: SignalParams {
+                amplitude,
+                frequency,
+                phase,
+            },
         }
     }
 }
@@ -109,24 +163,3 @@ impl<'a> Add for &'a dyn Signal {
         CombinedSignal::new(self, other)
     }
 }
-
-macro_rules! impl_signal_new {
-    ($struct_name:ident) => {
-        impl $struct_name {
-            pub fn new(amplitude: f64, frequency: f64, phase: f64) -> Self {
-                Self {
-                    param: SignalParams {
-                        amplitude,
-                        frequency,
-                        phase,
-                    },
-                }
-            }
-        }
-    };
-}
-
-impl_signal_new!(Sinus);
-impl_signal_new!(Cosinus);
-impl_signal_new!(Rectangular);
-impl_signal_new!(Triangular);
