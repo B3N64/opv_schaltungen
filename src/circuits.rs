@@ -10,7 +10,7 @@ enum CircuitType {
 pub trait Circuit {
     fn response(&mut self, ue: f64, dt: f64) -> f64;
     fn cutoff_frequency(&self) -> f64;
-    fn amplidudengang(&self, frequenz: f64) -> f64;
+    fn amplitudengang(&self, frequenz: f64) -> f64;
     fn generate_time_response(
         &mut self,
         signal: &dyn Signal,
@@ -54,7 +54,7 @@ impl Circuit for Integrator {
     fn cutoff_frequency(&self) -> f64 {
         1.0 / (2.0 * PI * self.r * self.c)
     }
-    fn amplidudengang(&self, frequenz: f64) -> f64 {
+    fn amplitudengang(&self, frequenz: f64) -> f64 {
         1.0 / (1.0 + (2.0 * PI * frequenz * self.r * self.c).powi(2)).sqrt()
     }
 }
@@ -82,7 +82,7 @@ impl Circuit for Differentiator {
     fn cutoff_frequency(&self) -> f64 {
         1.0 / (2.0 * PI * self.r * self.c)
     }
-    fn amplidudengang(&self, frequenz: f64) -> f64 {
+    fn amplitudengang(&self, frequenz: f64) -> f64 {
         2.0 * PI * frequenz * self.r * self.c
     }
 }
@@ -105,8 +105,8 @@ impl<'a> Circuit for CombinedCircuit<'a> {
     fn cutoff_frequency(&self) -> f64 {
         self.circuit1.cutoff_frequency() + self.circuit2.cutoff_frequency()
     }
-    fn amplidudengang(&self, frequenz: f64) -> f64 {
-        self.circuit1.amplidudengang(frequenz) * self.circuit2.amplidudengang(frequenz)
+    fn amplitudengang(&self, frequenz: f64) -> f64 {
+        self.circuit1.amplitudengang(frequenz) * self.circuit2.amplitudengang(frequenz)
     }
 }
 
