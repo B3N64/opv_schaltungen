@@ -1,4 +1,5 @@
 use crate::signals::Signal;
+use std::f64::consts::PI;
 use std::ops::Add;
 
 enum CircuitType {
@@ -8,7 +9,14 @@ enum CircuitType {
 
 pub trait Circuit {
     fn response(&mut self, ue: f64, dt: f64) -> f64;
-    fn generate(&mut self, signal: &dyn Signal, duration: f64, step: f64) -> Vec<(f64, f64)> {
+    fn cutoff_frequency(&self) -> f64;
+    fn amplidudengang(&self, frequenz: f64) -> f64;
+    fn generate_time_response(
+        &mut self,
+        signal: &dyn Signal,
+        duration: f64,
+        step: f64,
+    ) -> Vec<(f64, f64)> {
         let mut results = vec![];
         let num_steps = (duration / step) as usize;
 
@@ -23,14 +31,14 @@ pub trait Circuit {
     }
 }
 
-struct Integrator {
+pub struct Integrator {
     r: f64,
     c: f64,
     last_ua: f64,
 }
 
 impl Integrator {
-    fn new(r: f64, c: f64) -> Self {
+    pub fn new(r: f64, c: f64) -> Self {
         Self { r, c, last_ua: 0.0 }
     }
 }
@@ -43,6 +51,12 @@ impl Circuit for Integrator {
         self.last_ua = ua;
         ua
     }
+    fn cutoff_frequency(&self) -> f64 {
+        1.0 / (2.0 * PI * self.r * self.c)
+    }
+    fn amplidudengang(&self, frequenz: f64) -> f64 {
+        1.0 / (1.0 + (2.0 * PI * frequenz * self.r * self.c).powi(2)).sqrt()
+    }
 }
 
 pub struct Differentiator {
@@ -52,7 +66,7 @@ pub struct Differentiator {
 }
 
 impl Differentiator {
-    fn new(r: f64, c: f64) -> Self {
+    pub fn new(r: f64, c: f64) -> Self {
         Self { r, c, last_ue: 0.0 }
     }
 }
@@ -64,6 +78,12 @@ impl Circuit for Differentiator {
         let ua = -self.r * self.c * (ue - self.last_ue) / dt;
         self.last_ue = ue;
         ua
+    }
+    fn cutoff_frequency(&self) -> f64 {
+        1.0 / (2.0 * PI * self.r * self.c)
+    }
+    fn amplidudengang(&self, frequenz: f64) -> f64 {
+        2.0 * PI * frequenz * self.r * self.c
     }
 }
 
@@ -81,6 +101,12 @@ impl<'a> CombinedCircuit<'a> {
 impl<'a> Circuit for CombinedCircuit<'a> {
     fn response(&mut self, ue: f64, dt: f64) -> f64 {
         self.circuit2.response(ue, dt) + self.circuit2.response(ue, dt)
+    }
+    fn cutoff_frequency(&self) -> f64 {
+        self.circuit1.cutoff_frequency() + self.circuit2.cutoff_frequency()
+    }
+    fn amplidudengang(&self, frequenz: f64) -> f64 {
+        self.circuit1.amplidudengang(frequenz) * self.circuit2.amplidudengang(frequenz)
     }
 }
 
@@ -115,7 +141,7 @@ mod tests {
         let duration = 0.5; // Gesamtdauer der Simulation
 
         let input_values = combined_signal.generate(duration, step);
-        let output_values = integrator.generate(&combined_signal, duration, step);
+        let output_values = integrator.generate_time_response(&combined_signal, duration, step);
 
         // Dynamische Skalierung der Achsen basierend auf den Signalwerten
         let x_max = duration;
