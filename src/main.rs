@@ -54,9 +54,8 @@ fn UncontrolledComponent() -> impl IntoView {
 
     let (name, set_name) = signal("Uncontrolled".to_string());
 
-    // we'll use a NodeRef to store a reference to the input element
-    // this will be filled when the element is created
-    let input_element: NodeRef<Input> = NodeRef::new();
+        let duration = 2.0 * 1.0 / freq2;
+        let step = 1.0 / 1000.0;
 
     // fires when the form `submit` event happens
     // this will store the value of the <input> in our signal

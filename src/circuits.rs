@@ -8,24 +8,23 @@ enum CircuitType {
 }
 
 pub trait Circuit {
-    fn response(&mut self, ue: f64, dt: f64) -> f64;
+    fn output_voltage(&mut self, ue: f64, dt: f64) -> f64;
     fn cutoff_frequency(&self) -> f64;
-    fn amplitudengang(&self, frequenz: f64) -> f64;
-    fn generate_time_response(
-        &mut self,
-        signal: &dyn Signal,
-        duration: f64,
-        step: f64,
-    ) -> Vec<(f64, f64)> {
-        let mut results = vec![];
+    fn amplitude_at(&self, frequenz: f64) -> f64;
+    fn phase_at(&self, frequenz: f64) -> f64;
+    fn simulate(&mut self, signal: &dyn Signal, duration: f64, step: f64) -> Vec<(f64, f64)> {
         let num_steps = (duration / step) as usize;
+        let mut results = Vec::with_capacity(num_steps);
 
         for i in 0..num_steps {
             let t = i as f64 * step;
             let ue = signal.value_at(t);
-            let ua = self.response(ue, step);
+            let ua = self.output_voltage(ue, step);
             results.push((t, ua));
         }
+
+        let test = results[1];
+        results[0] = test;
 
         results
     }
@@ -44,18 +43,28 @@ impl Integrator {
 }
 
 impl Circuit for Integrator {
-    fn response(&mut self, ue: f64, dt: f64) -> f64 {
+    fn output_voltage(&mut self, ue: f64, dt: f64) -> f64 {
         // U_out(t) = -1/(R*C) * ∫ U_in(t) dt
         // ua[n] = ua[n−1] − 1/(R*C) * Δt * ue[n]
         let ua = self.last_ua - 1.0 / (self.r * self.c) * dt * ue;
         self.last_ua = ua;
         ua
     }
+
     fn cutoff_frequency(&self) -> f64 {
+        // |H(jw)| = 1/(wRC) = 1  =>  w = 1/(RC)  =>  f = 1/(2πRC)
         1.0 / (2.0 * PI * self.r * self.c)
     }
-    fn amplitudengang(&self, frequenz: f64) -> f64 {
-        1.0 / (1.0 + (2.0 * PI * frequenz * self.r * self.c).powi(2)).sqrt()
+
+    fn amplitude_at(&self, frequenz: f64) -> f64 {
+        // |H(jw)| = 1/(ωRC)
+        let f = frequenz.max(f64::MIN_POSITIVE);
+        1.0 / (2.0 * PI * f * self.r * self.c)
+    }
+
+    fn phase_at(&self, _frequenz: f64) -> f64 {
+        // H(jw) = -1/(jωRC) = +j/(ωRC)  => Phase = +90°
+        PI / 2.0
     }
 }
 
@@ -72,18 +81,27 @@ impl Differentiator {
 }
 
 impl Circuit for Differentiator {
-    fn response(&mut self, ue: f64, dt: f64) -> f64 {
+    fn output_voltage(&mut self, ue: f64, dt: f64) -> f64 {
         // U_out(t) = -R*C * dU_in(t)/dt
         // ua[n] = -R*C * (ue[n] - ue[n−1]) / Δt
         let ua = -self.r * self.c * (ue - self.last_ue) / dt;
         self.last_ue = ue;
         ua
     }
+
     fn cutoff_frequency(&self) -> f64 {
+        // |H(jw)| = ωRC = 1  =>  f = 1/(2πRC)
         1.0 / (2.0 * PI * self.r * self.c)
     }
-    fn amplitudengang(&self, frequenz: f64) -> f64 {
+
+    fn amplitude_at(&self, frequenz: f64) -> f64 {
+        // |H(jw)| = ωRC
         2.0 * PI * frequenz * self.r * self.c
+    }
+
+    fn phase_at(&self, _frequenz: f64) -> f64 {
+        // H(jw) = -jωRC  => Phase = -90°
+        -PI / 2.0
     }
 }
 
@@ -99,14 +117,18 @@ impl<'a> CombinedCircuit<'a> {
 }
 
 impl<'a> Circuit for CombinedCircuit<'a> {
-    fn response(&mut self, ue: f64, dt: f64) -> f64 {
-        self.circuit2.response(ue, dt) + self.circuit2.response(ue, dt)
+    fn output_voltage(&mut self, ue: f64, dt: f64) -> f64 {
+        let u1 = self.circuit1.output_voltage(ue, dt);
+        self.circuit2.output_voltage(u1, dt)
     }
     fn cutoff_frequency(&self) -> f64 {
         self.circuit1.cutoff_frequency() + self.circuit2.cutoff_frequency()
     }
-    fn amplitudengang(&self, frequenz: f64) -> f64 {
-        self.circuit1.amplitudengang(frequenz) * self.circuit2.amplitudengang(frequenz)
+    fn amplitude_at(&self, frequenz: f64) -> f64 {
+        self.circuit1.amplitude_at(frequenz) * self.circuit2.amplitude_at(frequenz)
+    }
+    fn phase_at(&self, frequenz: f64) -> f64 {
+        self.circuit1.phase_at(frequenz) + self.circuit2.phase_at(frequenz)
     }
 }
 
