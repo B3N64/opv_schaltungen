@@ -41,9 +41,21 @@
             }
 
             img {
-                height: 100px;
-                width: auto;
+                max-width: 100%;
                 margin: auto;
+                background-color: darkslategrey;
+                padding: 10px;
+            }
+
+            .image-container {
+                display: flex;
+                justify-content: center; /* Zentriert die Bilder horizontal */
+                gap: 10px; /* Abstand zwischen den Bildern */
+            }
+
+            .image-container img {
+                max-width: 200px; /* Maximale Breite der Bilder */
+                height: auto; /* Automatische Höhe, um das Seitenverhältnis beizubehalten */
             }
 
             .red {
@@ -52,17 +64,12 @@
         </style>
     </head>
     <body>
-        <!--         <picture>
-            <source
-                srcset="
-                    https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_pref_dark_RGB.svg
-                "
-                media="(prefers-color-scheme: dark)"
-            />
-            <img
-                src="https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_RGB.svg"
-                alt="Leptos Logo"
-            />
-        </picture> -->
+        <link data-trunk rel="copy-dir" href="static/images/" />
+        <div class="image-container">
+            <img src="/images/Differenzierer.svg" alt="Differenzierer" />
+            <img src="/images/Integrierer.svg" alt="Differenzierer" />
+        </div>
+
+        </picture>
     </body>
 </html>
