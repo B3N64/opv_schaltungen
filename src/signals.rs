@@ -3,6 +3,7 @@ use std::ops::Add;
 
 pub trait Signal {
     fn value_at(&self, t: f64) -> f64;
+    fn frequency(&self) -> f64;
     fn generate(&self, duration: f64, step: f64) -> Vec<(f64, f64)> {
         let mut results = vec![];
         let num_steps = (duration / step) as usize;
@@ -36,16 +37,13 @@ impl Signal for Constant {
     fn value_at(&self, _t: f64) -> f64 {
         self.value
     }
+    fn frequency(&self) -> f64 {
+        0.0
+    }
 }
 
 pub struct Sinus {
     param: SignalParams,
-}
-
-impl Signal for Sinus {
-    fn value_at(&self, t: f64) -> f64 {
-        self.param.amplitude * (2.0 * PI * self.param.frequency * t + self.param.phase).sin()
-    }
 }
 
 impl Sinus {
@@ -57,6 +55,15 @@ impl Sinus {
                 phase,
             },
         }
+    }
+}
+
+impl Signal for Sinus {
+    fn value_at(&self, t: f64) -> f64 {
+        self.param.amplitude * (2.0 * PI * self.param.frequency * t + self.param.phase).sin()
+    }
+    fn frequency(&self) -> f64 {
+        self.param.frequency
     }
 }
 
@@ -79,6 +86,9 @@ impl Cosinus {
 impl Signal for Cosinus {
     fn value_at(&self, t: f64) -> f64 {
         self.param.amplitude * (2.0 * PI * self.param.frequency * t + self.param.phase).cos()
+    }
+    fn frequency(&self) -> f64 {
+        self.param.frequency
     }
 }
 
@@ -105,6 +115,9 @@ impl Signal for Rectangular {
         } else {
             -self.param.amplitude
         }
+    }
+    fn frequency(&self) -> f64 {
+        self.param.frequency
     }
 }
 
@@ -137,6 +150,9 @@ impl Signal for Triangular {
             -4.0 * self.param.amplitude + 4.0 * self.param.amplitude * x
         }
     }
+    fn frequency(&self) -> f64 {
+        self.param.frequency
+    }
 }
 
 pub struct CombinedSignal<'a> {
@@ -153,6 +169,9 @@ impl<'a> CombinedSignal<'a> {
 impl<'a> Signal for CombinedSignal<'a> {
     fn value_at(&self, t: f64) -> f64 {
         self.signal1.value_at(t) + self.signal2.value_at(t)
+    }
+    fn frequency(&self) -> f64 {
+        self.signal1.frequency() + self.signal2.frequency()
     }
 }
 
