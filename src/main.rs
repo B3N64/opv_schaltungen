@@ -1,10 +1,12 @@
 // Einstiegspunkt der Anwendung
 // Diese Datei lädt alle Module und mountet die Leptos-App zum DOM
 
-mod circuit_data;  // Modul für die Verwaltung von OPV-Schaltungsdaten
-mod errors;        // Modul für Fehlerbehandlung
-mod signals;       // Modul für reaktive Signale
-mod app;           // Hauptmodul für die UI und Routing
+mod app;
+mod circuit_data;
+mod circuits;
+mod errors;
+mod plot;
+mod signals;
 
 use leptos::mount::mount_to_body;
 
