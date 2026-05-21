@@ -5,6 +5,9 @@ mod circuit_data;  // Modul für die Verwaltung von OPV-Schaltungsdaten
 mod errors;        // Modul für Fehlerbehandlung
 mod signals;       // Modul für reaktive Signale
 mod app;           // Hauptmodul für die UI und Routing
+mod circuits;
+mod plot;
+
 
 use leptos::mount::mount_to_body;
 
