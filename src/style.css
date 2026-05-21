@@ -66,6 +66,7 @@ h1 {
     margin-bottom: 24px;
     color: #2563eb;
     text-decoration: none;
+    cursor: pointer;
 }
 
 /* Layout für Detailseite: Bild links, Eingabeformular rechts */
@@ -120,6 +121,26 @@ button {
 
 button:hover {
     background: #1d4ed8;
+}
+
+.status-message {
+    margin-top: 16px;
+}
+
+.error-message {
+    color: #b91c1c;
+}
+
+.result-panel {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
 }
 
 @media (max-width: 800px) {
