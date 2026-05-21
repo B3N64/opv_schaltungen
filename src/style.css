@@ -1,0 +1,133 @@
+/* Globale Stile für die OPV-Schaltungen-Anwendung */
+/* Definiert das Erscheinungsbild der gesamten Seite */
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    color: #1f2937;
+}
+
+/* Hauptcontainer der Seite mit maximaler Breite */
+.page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px;
+}
+
+h1 {
+    margin-bottom: 8px;
+}
+
+/* Untertitel unter der Hauptüberschrift */
+.subtitle {
+    margin-bottom: 32px;
+    color: #6b7280;
+}
+
+/* Grid-Layout für die Übersichtsseite mit 3 Spalten */
+.circuit-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+/* Einzelne Schaltungskarte mit interaktiven Hover-Effekten */
+.circuit-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Hover-Effekt: Karte hebt sich leicht an */
+.circuit-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+}
+
+.circuit-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: contain;
+}
+
+.circuit-card h2 {
+    font-size: 18px;
+    text-align: center;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 24px;
+    color: #2563eb;
+    text-decoration: none;
+}
+
+/* Layout für Detailseite: Bild links, Eingabeformular rechts */
+.detail-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+/* Styling für beide Panels auf der Detailseite */
+.image-panel,
+.input-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.image-panel img {
+    width: 100%;
+    object-fit: contain;
+}
+
+/* Zeilenformat für Label und Input-Feld */
+.input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+    font-weight: bold;
+}
+
+/* Styling für Eingabefelder */
+input {
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+button {
+    margin-top: 12px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+@media (max-width: 800px) {
+    .circuit-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-layout {
+        grid-template-columns: 1fr;
+    }
+}
