@@ -41,7 +41,9 @@ pub fn App() -> impl IntoView {
         let rk = 100e3;
 
         /*         let mut circuit_time = Differentiator::new(r, c); */
-        let mut circuit_time = Tiefpass::new(r, c, rk);
+        /*   let mut circuit_time = Tiefpass::new(r, c, rk); */
+        /*         let mut circuit_time = Hochpass::new(r, rk, c); */
+        let mut circuit_time = PDGlied::new(r, rk, c);
 
         // Time-Canvas
         if let Some(canvas) = canvas_ref_time.get() {
