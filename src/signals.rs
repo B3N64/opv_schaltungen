@@ -1,20 +1,70 @@
 use std::f64::consts::PI;
 use std::ops::Add;
 
+enum SignalType {
+    Constant,
+    Sinus,
+    Cosinus,
+    Rectangular,
+    Triangular,
+}
+
+impl SignalType {
+    fn all() -> &'static [SignalType] {
+        &[
+            SignalType::Constant,
+            SignalType::Sinus,
+            SignalType::Cosinus,
+            SignalType::Rectangular,
+            SignalType::Triangular,
+        ]
+    }
+
+    fn from_id(&self, name: &str) -> Option<SignalType> {
+        match name.to_lowercase().as_str() {
+            "constant" => Some(SignalType::Constant),
+            "sinus" => Some(SignalType::Sinus),
+            "cosinus" => Some(SignalType::Cosinus),
+            "rectangular" => Some(SignalType::Rectangular),
+            "triangular" => Some(SignalType::Triangular),
+            _ => None,
+        }
+    }
+
+    fn id(&self) -> &'static str {
+        match self {
+            SignalType::Constant => "constant",
+            SignalType::Sinus => "sinus",
+            SignalType::Cosinus => "cosinus",
+            SignalType::Rectangular => "rectangular",
+            SignalType::Triangular => "triangular",
+        }
+    }
+
+    fn name(&self) -> &'static str {
+        match self {
+            SignalType::Constant => "Konstant",
+            SignalType::Sinus => "Sinus",
+            SignalType::Cosinus => "Cosinus",
+            SignalType::Rectangular => "Rechteck",
+            SignalType::Triangular => "Dreieck",
+        }
+    }
+
+    fn variables(&self) -> &'static [&'static str] {
+        match self {
+            SignalType::Constant => &["Value"],
+            SignalType::Sinus
+            | SignalType::Cosinus
+            | SignalType::Rectangular
+            | SignalType::Triangular => &["Amplitude", "Frequency", "Phase"],
+        }
+    }
+}
+
 pub trait Signal {
     fn value_at(&self, t: f64) -> f64;
     fn frequency(&self) -> f64;
-    fn generate(&self, duration: f64, step: f64) -> Vec<(f64, f64)> {
-        let mut results = vec![];
-        let num_steps = (duration / step) as usize;
-
-        for i in 0..num_steps {
-            let t = i as f64 * step;
-            results.push((t, self.value_at(t)));
-        }
-
-        results
-    }
 }
 
 pub struct SignalParams {
