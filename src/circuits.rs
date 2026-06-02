@@ -6,7 +6,7 @@ enum CircuitType {
     Integrator,
     Differentiator,
     Tiefpass,
-    // TODO: mit Hochpass ergänzen
+    Hochpass,
 }
 
 impl CircuitType {
@@ -15,6 +15,7 @@ impl CircuitType {
             CircuitType::Integrator,
             CircuitType::Differentiator,
             CircuitType::Tiefpass,
+            CircuitType::Hochpass,
         ]
     }
 
@@ -23,6 +24,7 @@ impl CircuitType {
             "integrator" => Some(CircuitType::Integrator),
             "differentiator" => Some(CircuitType::Differentiator),
             "tiefpass" => Some(CircuitType::Tiefpass),
+            "hochpass" => Some(CircuitType::Hochpass),
             _ => None,
         }
     }
@@ -32,6 +34,7 @@ impl CircuitType {
             CircuitType::Integrator => "integrator",
             CircuitType::Differentiator => "differentiator",
             CircuitType::Tiefpass => "tiefpass",
+            CircuitType::Hochpass => "hochpass",
         }
     }
 
@@ -40,6 +43,7 @@ impl CircuitType {
             CircuitType::Integrator => "Integrator",
             CircuitType::Differentiator => "Differentiator",
             CircuitType::Tiefpass => "Tiefpass",
+            CircuitType::Hochpass => "Hochpass",
         }
     }
 
@@ -48,6 +52,7 @@ impl CircuitType {
             CircuitType::Integrator => "/images/integrator.png",
             CircuitType::Differentiator => "/images/differentiator.png",
             CircuitType::Tiefpass => "/images/tiefpass.png",
+            CircuitType::Hochpass => "/images/hochpass.png",
         }
     }
 
@@ -56,6 +61,7 @@ impl CircuitType {
             CircuitType::Integrator => &["R", "C"],
             CircuitType::Differentiator => &["R", "C"],
             CircuitType::Tiefpass => &["R1", "CK", "RK"],
+            CircuitType::Hochpass => &["R1", "C1", "RK"],
         }
     }
 
@@ -81,6 +87,11 @@ impl CircuitType {
                 require(1, "CK")?,
                 require(2, "RK")?,
             ))),
+            Self::Hochpass => Ok(Box::new(Hochpass::new(
+                require(0, "R1")?,
+                require(1, "C1")?,
+                require(2, "RK")?,
+            ))),
         }
     }
 }
@@ -90,6 +101,110 @@ pub trait Circuit {
     fn cutoff_frequency(&self) -> f64;
     fn amplitude_at(&self, frequenz: f64) -> f64;
     fn phase_at(&self, frequenz: f64) -> f64;
+}
+
+pub struct Hochpass {
+    r1: f64,
+    rk: f64,
+    c1: f64,
+    uc: f64,
+}
+
+impl Hochpass {
+    pub fn new(r1: f64, rk: f64, c1: f64) -> Self {
+        let r1 = r1.max(f64::MIN_POSITIVE);
+        let c1 = c1.max(f64::MIN_POSITIVE);
+        let rk = rk.max(f64::MIN_POSITIVE);
+
+        Self {
+            r1,
+            rk,
+            c1,
+            uc: 0.0,
+        }
+    }
+}
+
+impl Circuit for Hochpass {
+    fn output_voltage(&mut self, ue: f64, dt: f64) -> f64 {
+        let i_in = (ue - self.uc) / self.r1;
+        let duc = (i_in / self.c1) * dt;
+
+        self.uc += duc;
+        -(self.rk / self.r1) * (ue - self.uc)
+    }
+
+    fn cutoff_frequency(&self) -> f64 {
+        1.0 / (2.0 * PI * self.r1 * self.c1)
+    }
+
+    fn amplitude_at(&self, frequenz: f64) -> f64 {
+        let f = frequenz.max(f64::MIN_POSITIVE);
+        let omega = 2.0 * PI * f;
+
+        (omega * self.c1 * self.rk) / (1.0 + (omega * self.r1 * self.c1).powi(2)).sqrt()
+    }
+
+    fn phase_at(&self, frequenz: f64) -> f64 {
+        let f = frequenz.max(f64::MIN_POSITIVE);
+        let omega = 2.0 * PI * f;
+
+        -PI / 2.0 - (omega * self.r1 * self.c1).atan()
+    }
+}
+
+pub struct PDGlied {
+    r1: f64,
+    rk: f64,
+    c1: f64,
+    last_ue: f64, // Zustandsspeicher: Vorherige Eingangsspannung für die Ableitung
+}
+
+impl PDGlied {
+    pub fn new(r1: f64, rk: f64, c1: f64) -> Self {
+        Self {
+            r1,
+            rk,
+            c1,
+            last_ue: 0.0,
+        }
+    }
+}
+
+impl Circuit for PDGlied {
+    fn output_voltage(&mut self, ue: f64, dt: f64) -> f64 {
+        let due_dt = if dt > 0.0 {
+            (ue - self.last_ue) / dt
+        } else {
+            0.0
+        };
+
+        self.last_ue = ue;
+
+        let proportional_part = (self.rk / self.r1) * ue;
+        let derivative_part = self.rk * self.c1 * due_dt;
+
+        -(proportional_part + derivative_part)
+    }
+
+    fn cutoff_frequency(&self) -> f64 {
+        1.0 / (2.0 * PI * self.r1 * self.c1)
+    }
+
+    fn amplitude_at(&self, frequenz: f64) -> f64 {
+        let f = frequenz.max(f64::MIN_POSITIVE);
+        let omega = 2.0 * PI * f;
+        let p_gain = self.rk / self.r1;
+
+        p_gain * (1.0 + (omega * self.r1 * self.c1).powi(2)).sqrt()
+    }
+
+    fn phase_at(&self, frequenz: f64) -> f64 {
+        let f = frequenz.max(f64::MIN_POSITIVE);
+        let omega = 2.0 * PI * f;
+
+        PI + (omega * self.r1 * self.c1).atan()
+    }
 }
 
 pub struct Tiefpass {
