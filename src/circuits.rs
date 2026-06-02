@@ -101,6 +101,10 @@ pub struct Tiefpass {
 
 impl Tiefpass {
     pub fn new(r1: f64, ck: f64, rk: f64) -> Self {
+        let r1 = r1.max(f64::MIN_POSITIVE);
+        let ck = ck.max(f64::MIN_POSITIVE);
+        let rk = rk.max(f64::MIN_POSITIVE);
+
         Self {
             r1,
             ck,
@@ -147,6 +151,9 @@ pub struct Integrator {
 
 impl Integrator {
     pub fn new(r: f64, c: f64) -> Self {
+        let r = r.max(f64::MIN_POSITIVE);
+        let c = c.max(f64::MIN_POSITIVE);
+
         Self { r, c, last_ua: 0.0 }
     }
 }
@@ -180,6 +187,9 @@ pub struct Differentiator {
 
 impl Differentiator {
     pub fn new(r: f64, c: f64) -> Self {
+        let r = r.max(f64::MIN_POSITIVE);
+        let c = c.max(f64::MIN_POSITIVE);
+
         Self { r, c, last_ue: 0.0 }
     }
 }
@@ -196,6 +206,8 @@ impl Circuit for Differentiator {
     }
 
     fn amplitude_at(&self, frequenz: f64) -> f64 {
+        let frequenz = frequenz.max(f64::MIN_POSITIVE);
+
         2.0 * PI * frequenz * self.r * self.c
     }
 
