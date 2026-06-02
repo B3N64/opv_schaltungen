@@ -7,6 +7,7 @@ enum CircuitType {
     Differentiator,
     Tiefpass,
     Hochpass,
+    PDGlied,
 }
 
 impl CircuitType {
@@ -16,6 +17,7 @@ impl CircuitType {
             CircuitType::Differentiator,
             CircuitType::Tiefpass,
             CircuitType::Hochpass,
+            CircuitType::PDGlied,
         ]
     }
 
@@ -25,6 +27,7 @@ impl CircuitType {
             "differentiator" => Some(CircuitType::Differentiator),
             "tiefpass" => Some(CircuitType::Tiefpass),
             "hochpass" => Some(CircuitType::Hochpass),
+            "pdglied" => Some(CircuitType::PDGlied),
             _ => None,
         }
     }
@@ -35,6 +38,7 @@ impl CircuitType {
             CircuitType::Differentiator => "differentiator",
             CircuitType::Tiefpass => "tiefpass",
             CircuitType::Hochpass => "hochpass",
+            CircuitType::PDGlied => "pdglied",
         }
     }
 
@@ -44,6 +48,7 @@ impl CircuitType {
             CircuitType::Differentiator => "Differentiator",
             CircuitType::Tiefpass => "Tiefpass",
             CircuitType::Hochpass => "Hochpass",
+            CircuitType::PDGlied => "PD-Glied",
         }
     }
 
@@ -53,6 +58,7 @@ impl CircuitType {
             CircuitType::Differentiator => "/images/differentiator.png",
             CircuitType::Tiefpass => "/images/tiefpass.png",
             CircuitType::Hochpass => "/images/hochpass.png",
+            CircuitType::PDGlied => "/images/pdglied.png",
         }
     }
 
@@ -62,6 +68,7 @@ impl CircuitType {
             CircuitType::Differentiator => &["R", "C"],
             CircuitType::Tiefpass => &["R1", "CK", "RK"],
             CircuitType::Hochpass => &["R1", "C1", "RK"],
+            CircuitType::PDGlied => &["R1", "RK", "C1"],
         }
     }
 
@@ -91,6 +98,11 @@ impl CircuitType {
                 require(0, "R1")?,
                 require(1, "C1")?,
                 require(2, "RK")?,
+            ))),
+            Self::PDGlied => Ok(Box::new(PDGlied::new(
+                require(0, "R1")?,
+                require(1, "RK")?,
+                require(2, "C1")?,
             ))),
         }
     }
@@ -157,11 +169,15 @@ pub struct PDGlied {
     r1: f64,
     rk: f64,
     c1: f64,
-    last_ue: f64, // Zustandsspeicher: Vorherige Eingangsspannung für die Ableitung
+    last_ue: f64,
 }
 
 impl PDGlied {
     pub fn new(r1: f64, rk: f64, c1: f64) -> Self {
+        let r1 = r1.max(f64::MIN_POSITIVE);
+        let rk = rk.max(f64::MIN_POSITIVE);
+        let c1 = c1.max(f64::MIN_POSITIVE);
+
         Self {
             r1,
             rk,
