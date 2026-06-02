@@ -36,30 +36,23 @@ pub fn App() -> impl IntoView {
 
         let sinus = Sinus::new(amp, freq2, 0.0);
 
-        let r = 1000.0;
-        let c = 0.000001;
+        let r = 100e3;
+        let c = 100e-9;
+        let rk = 100e3;
 
-        // Separates Exemplar für die Zeitsimulation (mutiert internen State)
-        let mut circuit_time = Differentiator::new(r, c);
-        // Separates Exemplar für den Frequenzgang
-        let circuit_freq = Differentiator::new(r, c);
-
-        let duration = 2.0 * 1.0 / freq2;
-        let step = duration / 1000.0;
-
-        let input_values = sinus.generate(duration, step);
-        let output_values = circuit_time.simulate(&sinus, duration, step);
+        /*         let mut circuit_time = Differentiator::new(r, c); */
+        let mut circuit_time = Tiefpass::new(r, c, rk);
 
         // Time-Canvas
         if let Some(canvas) = canvas_ref_time.get() {
             let canvas: HtmlCanvasElement = canvas.unchecked_into();
-            draw_time_response(canvas, input_values, output_values);
+            draw_time_response(canvas, &sinus, &mut circuit_time);
         }
 
         // Frequency-Canvas (Bode)
         if let Some(canvas) = canvas_ref_freq.get() {
             let canvas: HtmlCanvasElement = canvas.unchecked_into();
-            draw_bode_diagram(canvas, &circuit_freq);
+            draw_bode_diagram(canvas, &circuit_time);
         }
     });
 
