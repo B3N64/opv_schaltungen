@@ -1,7 +1,9 @@
+use crate::errors::{Error, Result};
 use std::f64::consts::PI;
 use std::ops::Add;
 
-enum SignalType {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SignalType {
     Constant,
     Sinus,
     Cosinus,
@@ -10,7 +12,7 @@ enum SignalType {
 }
 
 impl SignalType {
-    fn all() -> &'static [SignalType] {
+    pub fn all() -> &'static [SignalType] {
         &[
             SignalType::Constant,
             SignalType::Sinus,
@@ -20,7 +22,7 @@ impl SignalType {
         ]
     }
 
-    fn from_id(&self, name: &str) -> Option<SignalType> {
+    pub fn from_id(name: &str) -> Option<SignalType> {
         match name.to_lowercase().as_str() {
             "constant" => Some(SignalType::Constant),
             "sinus" => Some(SignalType::Sinus),
@@ -31,7 +33,7 @@ impl SignalType {
         }
     }
 
-    fn id(&self) -> &'static str {
+    pub fn id(&self) -> &'static str {
         match self {
             SignalType::Constant => "constant",
             SignalType::Sinus => "sinus",
@@ -41,7 +43,7 @@ impl SignalType {
         }
     }
 
-    fn name(&self) -> &'static str {
+    pub fn name(&self) -> &'static str {
         match self {
             SignalType::Constant => "Konstant",
             SignalType::Sinus => "Sinus",
@@ -51,13 +53,74 @@ impl SignalType {
         }
     }
 
-    fn variables(&self) -> &'static [&'static str] {
+    pub fn variables(&self) -> &'static [&'static str] {
         match self {
             SignalType::Constant => &["Value"],
             SignalType::Sinus
             | SignalType::Cosinus
             | SignalType::Rectangular
             | SignalType::Triangular => &["Amplitude", "Frequency", "Phase"],
+        }
+    }
+
+    pub fn construct(&self, values: &[f64]) -> Result<Box<dyn Signal>> {
+        let require = |idx: usize, key: &'static str| {
+            values
+                .get(idx)
+                .copied()
+                .ok_or(Error::CircuitConstructError(key.to_string()))
+        };
+
+        match self {
+            Self::Constant => Ok(Box::new(Constant::new(require(0, "Value")?))),
+
+            Self::Sinus => {
+                let amplitude = require(0, "Amplitude")?;
+                let frequency = require(1, "Frequency")?;
+                let phase = require(2, "Phase")?;
+
+                if frequency < 0.0 {
+                    return Err(Error::NegativeFrequency);
+                }
+
+                Ok(Box::new(Sinus::new(amplitude, frequency, phase)))
+            }
+
+            Self::Cosinus => {
+                let amplitude = require(0, "Amplitude")?;
+                let frequency = require(1, "Frequency")?;
+                let phase = require(2, "Phase")?;
+
+                if frequency < 0.0 {
+                    return Err(Error::NegativeFrequency);
+                }
+
+                Ok(Box::new(Cosinus::new(amplitude, frequency, phase)))
+            }
+
+            Self::Rectangular => {
+                let amplitude = require(0, "Amplitude")?;
+                let frequency = require(1, "Frequency")?;
+                let phase = require(2, "Phase")?;
+
+                if frequency < 0.0 {
+                    return Err(Error::NegativeFrequency);
+                }
+
+                Ok(Box::new(Rectangular::new(amplitude, frequency, phase)))
+            }
+
+            Self::Triangular => {
+                let amplitude = require(0, "Amplitude")?;
+                let frequency = require(1, "Frequency")?;
+                let phase = require(2, "Phase")?;
+
+                if frequency < 0.0 {
+                    return Err(Error::NegativeFrequency);
+                }
+
+                Ok(Box::new(Triangular::new(amplitude, frequency, phase)))
+            }
         }
     }
 }
@@ -87,6 +150,7 @@ impl Signal for Constant {
     fn value_at(&self, _t: f64) -> f64 {
         self.value
     }
+
     fn frequency(&self) -> f64 {
         0.0
     }
@@ -112,6 +176,7 @@ impl Signal for Sinus {
     fn value_at(&self, t: f64) -> f64 {
         self.param.amplitude * (2.0 * PI * self.param.frequency * t + self.param.phase).sin()
     }
+
     fn frequency(&self) -> f64 {
         self.param.frequency
     }
@@ -137,6 +202,7 @@ impl Signal for Cosinus {
     fn value_at(&self, t: f64) -> f64 {
         self.param.amplitude * (2.0 * PI * self.param.frequency * t + self.param.phase).cos()
     }
+
     fn frequency(&self) -> f64 {
         self.param.frequency
     }
@@ -166,6 +232,7 @@ impl Signal for Rectangular {
             -self.param.amplitude
         }
     }
+
     fn frequency(&self) -> f64 {
         self.param.frequency
     }
@@ -200,6 +267,7 @@ impl Signal for Triangular {
             -4.0 * self.param.amplitude + 4.0 * self.param.amplitude * x
         }
     }
+
     fn frequency(&self) -> f64 {
         self.param.frequency
     }
@@ -220,6 +288,7 @@ impl<'a> Signal for CombinedSignal<'a> {
     fn value_at(&self, t: f64) -> f64 {
         self.signal1.value_at(t) + self.signal2.value_at(t)
     }
+
     fn frequency(&self) -> f64 {
         self.signal1.frequency() + self.signal2.frequency()
     }

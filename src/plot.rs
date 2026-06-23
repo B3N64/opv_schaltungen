@@ -452,8 +452,21 @@ pub fn draw_time_response(
     let root = backend.into_drawing_area();
     root.fill(&BACKGROUND_COLOR).unwrap();
 
-    let duration = 2.0 / signal.frequency();
+    //let duration = 2.0 / signal.frequency();
+    //let samples: usize = 1000;
+    
+    //neu:
+    let frequency = signal.frequency().abs();
+
+    let duration = if frequency > 0.0 {
+        2.0 / frequency
+    } else {
+        1.0
+    };
+
     let samples: usize = 1000;
+    //bis hier neu um fehler zu beheben, falls frequenz =0. Dann wird ein Zeitraum von 1s geplottet, damit man wenigstens etwas sieht.
+
 
     let mut signal_values = Vec::with_capacity(samples + 1);
     let mut circuit_values = Vec::with_capacity(samples + 1);

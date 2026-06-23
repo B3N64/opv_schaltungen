@@ -2,7 +2,8 @@ use crate::errors::{Error, Result};
 use std::f64::consts::PI;
 use std::ops::Add;
 
-enum CircuitType {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CircuitType {
     Integrator,
     Differentiator,
     Tiefpass,
@@ -11,7 +12,7 @@ enum CircuitType {
 }
 
 impl CircuitType {
-    fn all() -> &'static [CircuitType] {
+    pub fn all() -> &'static [CircuitType] {
         &[
             CircuitType::Integrator,
             CircuitType::Differentiator,
@@ -21,7 +22,7 @@ impl CircuitType {
         ]
     }
 
-    fn from_id(&self, name: &str) -> Option<CircuitType> {
+    pub fn from_id(name: &str) -> Option<CircuitType> {
         match name.to_lowercase().as_str() {
             "integrator" => Some(CircuitType::Integrator),
             "differentiator" => Some(CircuitType::Differentiator),
@@ -32,7 +33,7 @@ impl CircuitType {
         }
     }
 
-    fn id(&self) -> &'static str {
+    pub fn id(&self) -> &'static str {
         match self {
             CircuitType::Integrator => "integrator",
             CircuitType::Differentiator => "differentiator",
@@ -42,7 +43,7 @@ impl CircuitType {
         }
     }
 
-    fn name(&self) -> &'static str {
+    pub fn name(&self) -> &'static str {
         match self {
             CircuitType::Integrator => "Integrator",
             CircuitType::Differentiator => "Differentiator",
@@ -52,17 +53,17 @@ impl CircuitType {
         }
     }
 
-    fn image(&self) -> &'static str {
+    pub fn image(&self) -> &'static str {
         match self {
-            CircuitType::Integrator => "/images/integrator.png",
-            CircuitType::Differentiator => "/images/differentiator.png",
-            CircuitType::Tiefpass => "/images/tiefpass.png",
-            CircuitType::Hochpass => "/images/hochpass.png",
-            CircuitType::PDGlied => "/images/pdglied.png",
+            CircuitType::Integrator => "/images/integrator.svg",
+            CircuitType::Differentiator => "/images/differentiator.svg",
+            CircuitType::Tiefpass => "/images/tiefpass.svg",
+            CircuitType::Hochpass => "/images/hochpass.svg",
+            CircuitType::PDGlied => "/images/pdglied.svg",
         }
     }
 
-    fn variables(&self) -> &'static [&'static str] {
+    pub fn variables(&self) -> &'static [&'static str] {
         match self {
             CircuitType::Integrator => &["R", "C"],
             CircuitType::Differentiator => &["R", "C"],
