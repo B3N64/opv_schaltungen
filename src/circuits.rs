@@ -55,11 +55,11 @@ impl CircuitType {
 
     pub fn image(&self) -> &'static str {
         match self {
-            CircuitType::Integrator => "/images/integrator.svg",
-            CircuitType::Differentiator => "/images/differentiator.svg",
-            CircuitType::Tiefpass => "/images/tiefpass.svg",
-            CircuitType::Hochpass => "/images/hochpass.svg",
-            CircuitType::PDGlied => "/images/pdglied.svg",
+            CircuitType::Integrator => "images/integrator.svg",
+            CircuitType::Differentiator => "images/differentiator.svg",
+            CircuitType::Tiefpass => "images/tiefpass.svg",
+            CircuitType::Hochpass => "images/hochpass.svg",
+            CircuitType::PDGlied => "images/pdglied.svg",
         }
     }
 
