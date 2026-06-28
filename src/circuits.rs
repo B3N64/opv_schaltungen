@@ -68,7 +68,7 @@ impl CircuitType {
             CircuitType::Integrator => &["R", "C"],
             CircuitType::Differentiator => &["R", "C"],
             CircuitType::Tiefpass => &["R1", "CK", "RK"],
-            CircuitType::Hochpass => &["R1", "C1", "RK"],
+            CircuitType::Hochpass => &["R1", "RK", "C1"],
             CircuitType::PDGlied => &["R1", "RK", "C1"],
         }
     }
@@ -97,8 +97,8 @@ impl CircuitType {
             ))),
             Self::Hochpass => Ok(Box::new(Hochpass::new(
                 require(0, "R1")?,
-                require(1, "C1")?,
-                require(2, "RK")?,
+                require(1, "RK")?,
+                require(2, "C1")?,
             ))),
             Self::PDGlied => Ok(Box::new(PDGlied::new(
                 require(0, "R1")?,
