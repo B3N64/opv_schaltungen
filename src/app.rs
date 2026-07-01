@@ -1,6 +1,3 @@
-// Hauptanwendung für OPV-Schaltungen
-// Diese Datei enthält alle UI-Komponenten und das Routing
-
 use leptos::prelude::*;
 use leptos_router::components::*;
 use leptos_router::hooks::use_params_map;
@@ -11,7 +8,9 @@ use crate::circuits::CircuitType;
 use crate::plot::{draw_bode_diagram, draw_time_response};
 use crate::signals::SignalType;
 
-// Hauptkomponente: Definiert die Routing-Struktur der Anwendung
+/// Definition: Erzeugt die oberste Ansicht der Anwendung.
+/// Eingabe: keine.
+/// Ausgabe: View mit Router und Seitenrahmen.
 #[component]
 pub fn App() -> impl IntoView {
     view! {
@@ -26,7 +25,9 @@ pub fn App() -> impl IntoView {
     }
 }
 
-// Startseite: Zeigt alle verfügbaren OPV-Schaltungen als Karten an
+/// Definition: Erzeugt die Startseite mit den verfügbaren Schaltungen.
+/// Eingabe: keine.
+/// Ausgabe: View mit Schaltungsauswahl.
 #[component]
 fn HomePage() -> impl IntoView {
     view! {
@@ -36,7 +37,6 @@ fn HomePage() -> impl IntoView {
                 "Wähle eine Schaltung aus, um die zugehörigen Variablen einzutragen."
             </p>
 
-            {/* Grid mit Schaltungskarten */}
             <div class="circuit-grid">
                 {CircuitType::all()
                 .iter()
@@ -50,7 +50,9 @@ fn HomePage() -> impl IntoView {
     }
 }
 
-// Einzelne Schaltungskarte als Link zur Detailseite
+/// Definition: Erzeugt eine Karte für eine einzelne Schaltung.
+/// Eingabe: circuit als übergebener Schaltungstyp.
+/// Ausgabe: View mit Link, Bild und Name der Schaltung.
 #[component]
 fn CircuitCard(circuit: CircuitType) -> impl IntoView {
     view! {
@@ -63,7 +65,6 @@ fn CircuitCard(circuit: CircuitType) -> impl IntoView {
     }
 }
 
-// Detailseite: Zeigt eine einzelne Schaltung mit Eingabeformular für Variablen
 #[derive(Clone)]
 struct SimulationPreview {
     cutoff_frequency: f64,
@@ -71,6 +72,9 @@ struct SimulationPreview {
     output_amplitude: f64,
 }
 
+/// Definition: Liest Zahlenwerte für eine Liste von Variablen ein.
+/// Eingabe: values als Eingabewerte und variables als erwartete Variablennamen.
+/// Ausgabe: Zahlenliste oder Fehlermeldung.
 fn parse_values_for_variables(
     values: &HashMap<String, String>,
     variables: &[&str],
@@ -93,13 +97,14 @@ fn parse_values_for_variables(
         .collect()
 }
 
+/// Definition: Liefert den Standardwert zu einer Variablen.
+/// Eingabe: variable als Variablenname.
+/// Ausgabe: Standardwert oder None.
 fn default_value_for_variable(variable: &str) -> Option<&'static str> {
     match variable {
-        // Schaltungsparameter
         "R" | "R1" | "RK" => Some("1000"),
         "C" | "C1" | "CK" => Some("0,000001"),
 
-        // Signalparameter
         "Value" => Some("1"),
         "Amplitude" => Some("1"),
         "Frequency" => Some("100"),
@@ -109,6 +114,9 @@ fn default_value_for_variable(variable: &str) -> Option<&'static str> {
     }
 }
 
+/// Definition: Bestimmt Eingangs- und Ausgangsamplitude einer Simulation.
+/// Eingabe: signal als Eingangssignal und circuit als zu simulierende Schaltung.
+/// Ausgabe: Tupel aus Eingangsamplitude und Ausgangsamplitude.
 fn calculate_voltage_amplitudes(
     signal: &dyn crate::signals::Signal,
     circuit: &mut dyn crate::circuits::Circuit,
@@ -144,11 +152,14 @@ fn calculate_voltage_amplitudes(
     (input_amplitude, output_amplitude)
 }
 
+/// Definition: Erzeugt die Detailseite einer ausgewählten Schaltung.
+/// Eingabe: keine direkten Parameter; die Schaltung wird aus der URL gelesen.
+/// Ausgabe: View mit Eingabeformular, Ergebnissen und Diagrammen.
 #[component]
 fn CircuitPage() -> impl IntoView {
     let params = use_params_map();
 
-    // Schaltung anhand der URL-Parameter laden
+    // Ermittelt aus der Adresse, welche Schaltung angezeigt werden soll.
     let circuit = move || {
         params
             .read()
@@ -156,20 +167,27 @@ fn CircuitPage() -> impl IntoView {
             .and_then(|id| CircuitType::from_id(&id))
     };
 
+    // Speichert, welcher Signaltyp im Auswahlfeld aktiv ist.
     let (selected_signal_id, set_selected_signal_id) =
         signal(SignalType::Constant.id().to_string());
 
+    // Wandelt die gespeicherte Signal-ID in den passenden Signaltyp um.
     let selected_signal =
         move || SignalType::from_id(&selected_signal_id.get()).unwrap_or(SignalType::Constant);
 
+    // Enthält die Eingabewerte der Schaltung, zum Beispiel Widerstand oder Kapazität.
     let (circuit_values, set_circuit_values) = signal(HashMap::<String, String>::new());
 
+    // Enthält die Eingabewerte des Eingangssignals, zum Beispiel Amplitude oder Frequenz.
     let (signal_values, set_signal_values) = signal(HashMap::<String, String>::new());
 
+    // Enthält die berechneten Werte, sobald eine Simulation durchgeführt wurde.
     let (simulation_preview, set_simulation_preview) = signal(Option::<SimulationPreview>::None);
 
+    // Enthält eine Fehlermeldung, falls Eingaben nicht verarbeitet werden können.
     let (calculation_error, set_calculation_error) = signal(Option::<String>::None);
 
+    // Verweise auf die beiden Zeichenflächen, in die später die Diagramme gezeichnet werden.
     let time_canvas_ref = NodeRef::<leptos::html::Canvas>::new();
     let bode_canvas_ref = NodeRef::<leptos::html::Canvas>::new();
 
@@ -177,23 +195,22 @@ fn CircuitPage() -> impl IntoView {
         <section>
             <A href="/opv_schaltungen/" attr:class="back-link">"← Zurück zur Übersicht"</A>
 
-                {/* Bedingte Anzeige: Schaltungsinformationen oder Fehlermeldung */}
                 {move || match circuit() {
                     Some(circuit) => view! {
                         <div class="simulation-page">
                                 <div class="detail-layout">
-                                    {/* Bereich A: Schaltungsbild */}
+                                    {/* Kopfbereich der Detailseite mit Name und Schaltbild. */}
                                     <div class="image-panel">
                                         <h1>{circuit.name()}</h1>
                                         <img src=circuit.image() alt=circuit.name() />
                                     </div>
 
-                                    {/* Bereiche B, C und D: Eingaben, Signal und berechnete Werte */}
+                                    {/* Eingabebereich für Schaltungswerte, Signalwerte und Berechnung. */}
                                     <div class="input-panel">
                                 <h2>"Variablen"</h2>
 
                                 <form>
-                                    {/* Eingabefelder für alle Variablen generieren */}
+                                    {/* Erzeugt pro Schaltungsvariable ein eigenes Eingabefeld. */}
                                     {circuit.variables()
                                     .iter()
                                     .map(|variable| {
@@ -235,6 +252,7 @@ fn CircuitPage() -> impl IntoView {
 
                                     <h2>"Eingangssignal"</h2>
 
+                                    {/* Auswahl des Signaltyps; beim Wechsel werden die Signalwerte zurückgesetzt. */}
                                     <label class="input-row">
                                         <span>"Signaltyp"</span>
                                         <select
@@ -256,6 +274,7 @@ fn CircuitPage() -> impl IntoView {
                                         </select>
                                     </label>
 
+    {/* Erzeugt die Eingabefelder, die zum ausgewählten Signaltyp gehören. */}
     {move || {
         selected_signal()
             .variables()
@@ -297,7 +316,7 @@ fn CircuitPage() -> impl IntoView {
             .collect_view()
     }}
 
-                                    {/* Berechnen-Button */}
+                                    {/* Liest alle Eingaben ein, berechnet die Werte und zeichnet die Diagramme. */}
                                     <button
                                         type="button"
                                         on:click=move |_| {
@@ -366,6 +385,7 @@ fn CircuitPage() -> impl IntoView {
 
                                 </form>
 
+                                {/* Ausgabe von Fehlern oder berechneten Ergebniswerten. */}
                                 <div class="result-panel">
                                 <h2>"Berechnete Werte"</h2>
 
@@ -406,7 +426,7 @@ fn CircuitPage() -> impl IntoView {
                             </div>
 
 
-                                {/* Bereich E: Zeitdiagramm */}
+                                {/* Zeichenfläche für den zeitlichen Verlauf von Eingangs- und Ausgangssignal. */}
                                 <div class="diagram-panel">
                                     <h2>"Zeitdiagramm"</h2>
                                     <canvas
@@ -418,7 +438,7 @@ fn CircuitPage() -> impl IntoView {
                                     ></canvas>
                                 </div>
 
-                                {/* Bereich F: Bode-Diagramm */}
+                                {/* Zeichenfläche für Amplituden- und Phasengang der Schaltung. */}
                                 <div class="diagram-panel">
                                     <h2>"Bode-Diagramm"</h2>
                                     <canvas
@@ -432,8 +452,6 @@ fn CircuitPage() -> impl IntoView {
 
                             </div>
 
-
-                            {/* Rechtes Panel: Eingabeformular für Variablen */}
 
                     }.into_any(),
 

@@ -1,6 +1,6 @@
-/* Globale Stile für die OPV-Schaltungen-Anwendung */
-/* Definiert das Erscheinungsbild der gesamten Seite */
-
+/* Definition: Grundstil der gesamten Seite.
+   Eingabe: body-Element.
+   Ausgabe: dunkler Hintergrund, helle Schrift und Standardschriftart. */
 body {
     margin: 0;
     font-family: Arial, Helvetica, sans-serif;
@@ -8,13 +8,18 @@ body {
     color: #f5f5f5;
 }
 
-/* Hauptcontainer der Seite mit maximaler Breite */
+/* Definition: Begrenzter Inhaltsbereich der Anwendung.
+   Eingabe: Element mit der Klasse page.
+   Ausgabe: zentrierter Seiteninhalt mit Abstand zum Fensterrand. */
 .page {
     max-width: 1200px;
     margin: 0 auto;
     padding: 40px 32px;
 }
 
+/* Definition: Hauptüberschriften der Seiten.
+   Eingabe: h1-Elemente.
+   Ausgabe: große, zentrierte Überschrift mit hellem Text. */
 h1 {
     margin: 0 0 12px 0;
     font-size: 48px;
@@ -23,7 +28,9 @@ h1 {
     color: #ffffff;
 }
 
-/* Untertitel unter der Hauptüberschrift */
+/* Definition: Kurzer Beschreibungstext unter der Überschrift.
+   Eingabe: Element mit der Klasse subtitle.
+   Ausgabe: mittig ausgerichteter Untertitel mit kleinerem Abstand nach unten. */
 .subtitle {
     margin: 0 0 40px 0;
     color: #d1d5db;
@@ -31,14 +38,18 @@ h1 {
     font-size: 18px;
 }
 
-/* Grid-Layout für die Übersichtsseite mit 3 Spalten */
+/* Definition: Raster für die Schaltungsauswahl.
+   Eingabe: Container mit der Klasse circuit-grid.
+   Ausgabe: automatisch umbrechende Kartenanordnung. */
 .circuit-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 24px;
 }
 
-/* Einzelne Schaltungskarte mit interaktiven Hover-Effekten */
+/* Definition: Darstellung einer einzelnen Schaltungskarte.
+   Eingabe: Element mit der Klasse circuit-card.
+   Ausgabe: klickbare Karte mit Bildbereich, Titel und dunklem Rahmen. */
 .circuit-card {
     display: flex;
     flex-direction: column;
@@ -59,13 +70,18 @@ h1 {
     transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
-/* Hover-Effekt: Karte hebt sich leicht an */
+/* Definition: Zustand einer Schaltungskarte beim Überfahren mit der Maus.
+   Eingabe: circuit-card im Hover-Zustand.
+   Ausgabe: leicht angehobene Karte mit hervorgehobener Rahmenfarbe. */
 .circuit-card:hover {
     transform: translateY(-4px);
     background: #323a42;
     border-color: #60a5fa;
 }
 
+/* Definition: Schaltbild innerhalb einer Karte.
+   Eingabe: img-Element in einer circuit-card.
+   Ausgabe: gleichmäßig skalierte Grafik mit hellem Hintergrund. */
 .circuit-card img {
     width: 100%;
     height: 150px;
@@ -75,6 +91,9 @@ h1 {
     padding: 12px;
 }
 
+/* Definition: Titel einer Schaltungskarte.
+   Eingabe: h2-Element in einer circuit-card.
+   Ausgabe: zentrierter Kartenname unter dem Bild. */
 .circuit-card h2 {
     margin: 18px 0 0 0;
     font-size: 22px;
@@ -82,11 +101,17 @@ h1 {
     color: #ffffff;
 }
 
+/* Definition: Link um eine Schaltungskarte.
+   Eingabe: a-Element im circuit-grid.
+   Ausgabe: Link ohne zusätzliche Unterstreichung oder abweichende Farbe. */
 .circuit-grid a {
     text-decoration: none;
     color: inherit;
 }
 
+/* Definition: Link zurück zur Übersichtsseite.
+   Eingabe: Element mit der Klasse back-link.
+   Ausgabe: blauer Textlink mit Abstand zum folgenden Inhalt. */
 .back-link {
     display: inline-block;
     margin-bottom: 24px;
@@ -94,9 +119,9 @@ h1 {
     text-decoration: none;
 }
 
-/* Layout für Detailseite:
-   links: Schaltungsbild + Plots
-   rechts: Eingaben + berechnete Werte */
+/* Definition: Hauptlayout der Detailseite.
+   Eingabe: Container mit der Klasse simulation-page.
+   Ausgabe: zweispaltiges Layout mit Diagrammen links und Eingaben rechts. */
 .simulation-page {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 420px;
@@ -104,13 +129,16 @@ h1 {
     align-items: start;
 }
 
-/* detail-layout ist im HTML noch vorhanden.
-   Mit display: contents werden image-panel und input-panel
-   aber direkt als Grid-Elemente der simulation-page behandelt. */
+/* Definition: Hilfscontainer innerhalb der Detailseite.
+   Eingabe: Element mit der Klasse detail-layout.
+   Ausgabe: der Container erzeugt keine eigene sichtbare Box. */
 .detail-layout {
     display: contents;
 }
 
+/* Definition: Gemeinsames Aussehen der Inhaltsbereiche.
+   Eingabe: Panel-Elemente für Bild, Eingabe, Ergebnis und Diagramme.
+   Ausgabe: dunkle Boxen mit Rahmen, Rundung und Schatten. */
 .image-panel,
 .input-panel,
 .result-panel,
@@ -121,17 +149,25 @@ h1 {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
-/* Linke Spalte oben: Schaltungsbild */
+/* Definition: Bereich für Name und Schaltbild.
+   Eingabe: Element mit der Klasse image-panel.
+   Ausgabe: oberes Panel in der linken Spalte. */
 .image-panel {
     grid-column: 1;
     grid-row: 1;
     padding: 24px;
 }
 
+/* Definition: Überschrift im Schaltbildbereich.
+   Eingabe: h1-Element im image-panel.
+   Ausgabe: zusätzlicher Abstand zum Schaltbild. */
 .image-panel h1 {
     margin-bottom: 24px;
 }
 
+/* Definition: Schaltbild auf der Detailseite.
+   Eingabe: img-Element im image-panel.
+   Ausgabe: vollständig sichtbare Grafik mit heller Zeichenfläche. */
 .image-panel img {
     width: 100%;
     height: auto;
@@ -145,13 +181,18 @@ h1 {
     padding: 2px;
 }
 
-/* Rechte Spalte: Eingaben bleiben rechts neben Bild und Diagrammen */
+/* Definition: Bereich für Eingaben und Ergebnisse.
+   Eingabe: Element mit der Klasse input-panel.
+   Ausgabe: rechtes Panel über die Höhe von Bild und Diagrammen. */
 .input-panel {
     grid-column: 2;
     grid-row: 1 / span 3;
     padding: 24px;
 }
 
+/* Definition: Abschnittsüberschriften in Eingabe- und Diagrammbereichen.
+   Eingabe: h2-Elemente in input-panel oder diagram-panel.
+   Ausgabe: linksbündige Überschrift mit einheitlicher Größe. */
 .input-panel h2,
 .diagram-panel h2 {
     margin: 0 0 20px 0;
@@ -160,12 +201,18 @@ h1 {
     text-align: left;
 }
 
+/* Definition: Formularanordnung im Eingabebereich.
+   Eingabe: form-Element im input-panel.
+   Ausgabe: senkrecht angeordnete Eingabefelder mit gleichmäßigem Abstand. */
 .input-panel form {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
+/* Definition: Beschriftung eines Eingabefelds.
+   Eingabe: label-Element im input-panel.
+   Ausgabe: Text und Eingabefeld untereinander. */
 .input-panel label {
     display: flex;
     flex-direction: column;
@@ -176,6 +223,9 @@ h1 {
     font-weight: 600;
 }
 
+/* Definition: Eingabefelder und Auswahlfelder.
+   Eingabe: input- und select-Elemente im input-panel.
+   Ausgabe: breite, dunkle Formularfelder mit hellem Text. */
 .input-panel input,
 .input-panel select {
     width: 100%;
@@ -192,12 +242,18 @@ h1 {
     font-size: 16px;
 }
 
+/* Definition: Aktives Formularfeld.
+   Eingabe: input oder select im Fokus.
+   Ausgabe: hervorgehobener Rand ohne Browser-Standardumrandung. */
 .input-panel input:focus,
 .input-panel select:focus {
     outline: none;
     border-color: #60a5fa;
 }
 
+/* Definition: Berechnen-Schaltfläche.
+   Eingabe: button-Element im input-panel.
+   Ausgabe: blaue Schaltfläche mit kräftiger Schrift. */
 .input-panel button {
     margin-top: 8px;
     padding: 14px 18px;
@@ -215,11 +271,17 @@ h1 {
     transition: background 0.15s ease, transform 0.15s ease;
 }
 
+/* Definition: Zustand der Berechnen-Schaltfläche beim Überfahren mit der Maus.
+   Eingabe: button im Hover-Zustand.
+   Ausgabe: dunkleres Blau und leichte Verschiebung nach oben. */
 .input-panel button:hover {
     background: #1d4ed8;
     transform: translateY(-2px);
 }
 
+/* Definition: Ergebnisbereich unter dem Formular.
+   Eingabe: Element mit der Klasse result-panel.
+   Ausgabe: abgesetzte Box für berechnete Werte oder Meldungen. */
 .result-panel {
     margin-top: 24px;
     padding: 20px;
@@ -227,22 +289,34 @@ h1 {
     background: #20262c;
 }
 
+/* Definition: Überschrift des Ergebnisbereichs.
+   Eingabe: h2-Element im result-panel.
+   Ausgabe: kleinere linksbündige Überschrift. */
 .result-panel h2 {
     margin: 0 0 16px 0;
     font-size: 22px;
     text-align: left;
 }
 
+/* Definition: Ergebniszeilen im Ergebnisbereich.
+   Eingabe: p-Elemente im result-panel.
+   Ausgabe: lesbare Textzeilen mit kurzem Abstand. */
 .result-panel p {
     margin: 8px 0;
     color: #e5e7eb;
     text-align: left;
 }
 
+/* Definition: Hervorgehobene Bezeichnungen im Ergebnisbereich.
+   Eingabe: strong-Elemente im result-panel.
+   Ausgabe: weiße Beschriftung vor dem jeweiligen Wert. */
 .result-panel strong {
     color: #ffffff;
 }
 
+/* Definition: Fehlermeldung.
+   Eingabe: Element mit der Klasse error-message.
+   Ausgabe: rot markierte Hinweisbox. */
 .error-message {
     margin-top: 20px;
     padding: 14px 16px;
@@ -254,7 +328,9 @@ h1 {
     border-radius: 12px;
 }
 
-/* Diagramme stehen links unter dem Schaltungsbild */
+/* Definition: Bereich für ein Diagramm.
+   Eingabe: Element mit der Klasse diagram-panel.
+   Ausgabe: linkes Panel mit Zeichenfläche und Überschrift. */
 .diagram-panel {
     grid-column: 1;
 
@@ -270,16 +346,23 @@ h1 {
     gap: 12px;
 }
 
-/* Zeitdiagramm direkt unter dem Schaltungsbild */
+/* Definition: Position des ersten Diagramms.
+   Eingabe: erstes diagram-panel.
+   Ausgabe: Platzierung direkt unter dem Schaltbild. */
 .diagram-panel:nth-of-type(1) {
     grid-row: 2;
 }
 
-/* Bode-Diagramm unter dem Zeitdiagramm */
+/* Definition: Position des zweiten Diagramms.
+   Eingabe: zweites diagram-panel.
+   Ausgabe: Platzierung unter dem Zeitdiagramm. */
 .diagram-panel:nth-of-type(2) {
     grid-row: 3;
 }
 
+/* Definition: Zeichenfläche eines Diagramms.
+   Eingabe: canvas-Element im diagram-panel.
+   Ausgabe: skalierte Zeichenfläche mit dunklem Hintergrund. */
 .diagram-panel canvas {
     width: 100%;
     height: auto;
@@ -290,16 +373,24 @@ h1 {
     border-radius: 0;
 }
 
-/* Kleinere Bildschirme: alles untereinander */
+/* Definition: Layoutanpassung für kleinere Bildschirme.
+   Eingabe: Fensterbreite bis 950 Pixel.
+   Ausgabe: einspaltige Anordnung der Panels. */
 @media (max-width: 950px) {
     .simulation-page {
         grid-template-columns: 1fr;
     }
 
+    /* Definition: Hilfscontainer im einspaltigen Layout.
+       Eingabe: detail-layout innerhalb der Media Query.
+       Ausgabe: weiterhin keine eigene sichtbare Box. */
     .detail-layout {
         display: contents;
     }
 
+    /* Definition: Panels im einspaltigen Layout.
+       Eingabe: Bild-, Eingabe- und Diagrammpanels.
+       Ausgabe: alle Bereiche liegen untereinander in einer Spalte. */
     .image-panel,
     .input-panel,
     .diagram-panel {
@@ -307,10 +398,16 @@ h1 {
         grid-row: auto;
     }
 
+    /* Definition: Reihenfolge des Eingabebereichs auf kleinen Bildschirmen.
+       Eingabe: input-panel innerhalb der Media Query.
+       Ausgabe: Eingaben erscheinen nach dem Schaltbild. */
     .input-panel {
         order: 2;
     }
 
+    /* Definition: Reihenfolge des Schaltbildbereichs auf kleinen Bildschirmen.
+       Eingabe: image-panel innerhalb der Media Query.
+       Ausgabe: Schaltbild erscheint vor den Eingaben. */
     .image-panel {
         order: 1;
     }
